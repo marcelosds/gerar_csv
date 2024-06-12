@@ -1,14 +1,13 @@
 import logging
+import socket
 import urllib
 import webbrowser
-
 import pandas as pd
 import configparser
 import pyodbc
 from tkinter import *
 import os
 from tkinter import messagebox
-
 from sqlalchemy import create_engine
 
 
@@ -60,97 +59,96 @@ class Application:
         self.autenticar["command"] = self.gerarItens
         self.autenticar.pack()
 
-        self.mensagem = Label(self.quartoContainer, text="", font=self.fontePadrao)
-        self.mensagem.pack()
-
 
     #Método Autenticar e Gerar Lista de Itens
     def gerarItens(self):
 
-            # Verificar se o driver está instalado
-            drivers = [driver for driver in pyodbc.drivers() if "ODBC Driver 17 for SQL Server" in driver]
-            #lista_drivers = [driver for driver in pyodbc.drivers()]
-            #print(lista_drivers)
+        # Verificar se o driver está instalado
+        drivers = [driver for driver in pyodbc.drivers() if "ODBC Driver 17 for SQL Server" in driver]
+        #lista_drivers = [driver for driver in pyodbc.drivers()]
+        #print(lista_drivers)
 
-            if drivers:
-                try:
-                    config = configparser.ConfigParser()
-                    config.read('config.ini')
+        if drivers:
+            try:
+                config = configparser.ConfigParser()
+                config.read('config.ini')
 
-                    host = config['Conexao']['host']
-                    database = config['Conexao']['database']
+                host = config['Conexao']['host']
+                database = config['Conexao']['database']
 
-                    usuario = self.nome.get()
-                    senha = self.senha.get()
+                usuario = self.nome.get()
+                senha = self.senha.get()
 
-                    DRIVER = 'ODBC Driver 17 for SQL Server'
-                    SERVER = host
-                    DATABASE = database
-                    USERNAME = usuario
-                    PASSWORD = senha
+                DRIVER = 'ODBC Driver 17 for SQL Server'
+                SERVER = host
+                DATABASE = database
+                USERNAME = usuario
+                PASSWORD = senha
 
-                    params = urllib.parse.quote_plus(f"DRIVER={DRIVER};"
-                                                     f"SERVER={SERVER};"
-                                                     f"DATABASE={DATABASE};"
-                                                     f"UID={USERNAME};"
-                                                     f"PWD={PASSWORD}")
+                params = urllib.parse.quote_plus(f"DRIVER={DRIVER};"
+                                                 f"SERVER={SERVER};"
+                                                 f"DATABASE={DATABASE};"
+                                                 f"UID={USERNAME};"
+                                                 f"PWD={PASSWORD}")
 
-                    engine = create_engine("mssql+pyodbc:///?odbc_connect={}".format(params))
+                engine = create_engine("mssql+pyodbc:///?odbc_connect={}".format(params))
 
-                    query = """
-                                    SELECT
-                                        '' as [Data Movimento],	
-                                        ITEM.nrPlaca as Placa,
-                                        ITEM.dsItem as [Descrição Completa],
-                                        ITEM.dsReduzida as [Descrição Reduzida],
-                                        ITEM.dsMarca AS MARCA,
-                                        ITEM.dsModelo AS MODELO,
-                                        ITEM.cdLocalizacao as [Cód Localização],
-                                        ITEM.cdClassificacao as [Cód. Classificação],
-                                        ITEM.cdSituacao as Situação,
-                                        ITEM.cdEstadoConser as EstadoConservação,
-                                        Convert(varchar(10), dtAquisicao, 105) as [Data do Ingresso],
-                                        ITEM.cdTpIngresso as [Tipo de Ingresso],
-                                        ITEM.cdFornecedor as [Cód. Fornecedor],
-                                        ITEM.cdConvenio as Convenio,
-                                        ITEM.vlAtual as [Valor Atual],
-                                        ITEM.InContabil as Contábil,
-                                        ITEM.InDepreciavel as Depreciável,
-                                        ITEM.CdMetodoDepreciacao as [Método de Depreciação],
-                                        ITEM.VidaUtil as [Vida Útil],
-                                        ITEM.vlResidual as [Valor Residual],
-                                        '' as [Data Inicio Depreciação]
-                                    FROM ITEM
-                                    WHERE ITEM.stitem = 'N'
-                                    """
 
-                    df = pd.read_sql(query, engine)
+                query = """
+                                SELECT
+                                    '' as [Data Movimento],	
+                                    ITEM.nrPlaca as Placa,
+                                    ITEM.dsItem as [Descrição Completa],
+                                    ITEM.dsReduzida as [Descrição Reduzida],
+                                    ITEM.dsMarca AS MARCA,
+                                    ITEM.dsModelo AS MODELO,
+                                    ITEM.cdLocalizacao as [Cód Localização],
+                                    ITEM.cdClassificacao as [Cód. Classificação],
+                                    ITEM.cdSituacao as Situação,
+                                    ITEM.cdEstadoConser as EstadoConservação,
+                                    Convert(varchar(10), dtAquisicao, 105) as [Data do Ingresso],
+                                    ITEM.cdTpIngresso as [Tipo de Ingresso],
+                                    ITEM.cdFornecedor as [Cód. Fornecedor],
+                                    ITEM.cdConvenio as Convenio,
+                                    ITEM.vlAtual as [Valor Atual],
+                                    ITEM.InContabil as Contábil,
+                                    ITEM.InDepreciavel as Depreciável,
+                                    ITEM.CdMetodoDepreciacao as [Método de Depreciação],
+                                    ITEM.VidaUtil as [Vida Útil],
+                                    ITEM.vlResidual as [Valor Residual],
+                                    '' as [Data Inicio Depreciação]
+                                FROM ITEM
+                                WHERE ITEM.stitem = 'N'
+                                """
 
-                    diretorio_atual = os.getcwd()
-                    caminho_arquivo = os.path.join(diretorio_atual, "Itens_Levantamento.xlsx")
+                df = pd.read_sql(query, engine)
 
-                    df.to_excel(caminho_arquivo, index=False)
+                diretorio_atual = os.getcwd()
+                caminho_arquivo = os.path.join(diretorio_atual, "Itens_Levantamento.xlsx")
 
-                    self.mensagem["text"] = "Lista gerada com sucesso!"
+                df.to_excel(caminho_arquivo, index=False)
 
-                except Exception as e:
-                    logging.basicConfig(filename='app.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s')
-                    logging.error('Ocorreu um erro: {}'.format(str(e)))
+                messagebox.showinfo('Gerar Lista', 'Lista gerada com sucesso!')
 
-            else:
-                messagebox.showwarning('Driver ODBC', 'Driver ODBC 17 for SQL Server não instalado, por favor instale!')
-                # URL que você deseja abrir
-                url = "https://go.microsoft.com/fwlink/?linkid=2266337"
-                # Abrir o navegador padrão com o link
-                webbrowser.open(url)
+            except Exception as e:
+                logging.basicConfig(filename='app.log', level=logging.ERROR,
+                                    format='%(asctime)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s')
+                logging.error('{}'.format(str(e)))
+                messagebox.showwarning('Conexão SQL', 'Ocorreu um erro de conexão, verifique o arquivo de LOG.')
+
+        else:
+            messagebox.showwarning('Driver ODBC', 'Driver ODBC 17 for SQL Server não instalado, por favor instale!')
+            # URL que você deseja abrir
+            url = "https://go.microsoft.com/fwlink/?linkid=2266337"
+            # Abrir o navegador padrão com o link
+            webbrowser.open(url)
 
 
 app = Tk()
-app.geometry("300x180")
+app.geometry("300x160")
 app.eval('tk::PlaceWindow %s center' % app.winfo_pathname(app.winfo_id()))
 app.title("Gerar Itens - GOVBR PP")
 app.iconbitmap("icon.ico")
-app.resizable(0,0)
+app.resizable(0, 0)
 Application(app)
 app.mainloop()
-

@@ -1,15 +1,13 @@
 import logging
+import socket
 import urllib
 import webbrowser
-
 import pandas as pd
 import configparser
 import pyodbc
 from tkinter import *
 import os
 from tkinter import messagebox
-
-from openpyxl.chart import label
 from sqlalchemy import create_engine
 
 
@@ -61,13 +59,9 @@ class Application:
         self.autenticar["command"] = self.gerarItens
         self.autenticar.pack()
 
-        self.mensagem = Label(self.quartoContainer, text="", font=self.fontePadrao)
-        self.mensagem.pack()
-
 
     #Método Autenticar e Gerar Lista de Itens
     def gerarItens(self):
-
 
         # Verificar se o driver está instalado
         drivers = [driver for driver in pyodbc.drivers() if "ODBC Driver 17 for SQL Server" in driver]
@@ -98,6 +92,7 @@ class Application:
                                                  f"PWD={PASSWORD}")
 
                 engine = create_engine("mssql+pyodbc:///?odbc_connect={}".format(params))
+
 
                 query = """
                                 SELECT
@@ -133,11 +128,13 @@ class Application:
 
                 df.to_excel(caminho_arquivo, index=False)
 
-                self.mensagem["text"] = "Lista gerada com sucesso!"
+                messagebox.showinfo('Gerar Lista', 'Lista gerada com sucesso!')
 
             except Exception as e:
-                logging.basicConfig(filename='app.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s')
-                logging.error('Ocorreu um erro: {}'.format(str(e)))
+                logging.basicConfig(filename='app.log', level=logging.ERROR,
+                                    format='%(asctime)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s')
+                logging.error('{}'.format(str(e)))
+                messagebox.showwarning('Conexão SQL', 'Ocorreu um erro de conexão, verifique o arquivo de LOG.')
 
         else:
             messagebox.showwarning('Driver ODBC', 'Driver ODBC 17 for SQL Server não instalado, por favor instale!')
@@ -148,11 +145,10 @@ class Application:
 
 
 app = Tk()
-app.geometry("300x180")
+app.geometry("300x160")
 app.eval('tk::PlaceWindow %s center' % app.winfo_pathname(app.winfo_id()))
 app.title("Gerar Itens - GOVBR PP")
 app.iconbitmap("icon.ico")
-app.resizable(0,0)
+app.resizable(0, 0)
 Application(app)
 app.mainloop()
-

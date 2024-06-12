@@ -1,0 +1,1 @@
+2024-06-11 15:50:10,493 - ERROR - criar_csv - gerarItens - Ocorreu um erro: module 'openpyxl.chart.label' has no attribute 'config'

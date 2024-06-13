@@ -64,7 +64,7 @@ class Application:
     def gerarItens(self):
 
         # Verificar se o driver está instalado
-        drivers = [driver for driver in pyodbc.drivers() if "ODBC Driver 17 for SQL Server" in driver]
+        drivers = [driver for driver in pyodbc.drivers() if "ODBC Driver 13 for SQL Server" in driver]
         #lista_drivers = [driver for driver in pyodbc.drivers()]
         #print(lista_drivers)
 
@@ -79,7 +79,7 @@ class Application:
                 usuario = self.nome.get()
                 senha = self.senha.get()
 
-                DRIVER = 'ODBC Driver 17 for SQL Server'
+                DRIVER = 'ODBC Driver 13 for SQL Server'
                 SERVER = host
                 DATABASE = database
                 USERNAME = usuario
@@ -96,7 +96,8 @@ class Application:
 
                 query = """
                                 SELECT
-                                    '' as [Data Movimento],	
+                                    '' as [Data Movimento],
+                                    ITEM.cditem as [Código],	
                                     ITEM.nrPlaca as Placa,
                                     ITEM.dsItem as [Descrição Completa],
                                     ITEM.dsReduzida as [Descrição Reduzida],
@@ -137,9 +138,9 @@ class Application:
                 messagebox.showwarning('Conexão SQL', 'Ocorreu um erro de conexão, verifique o arquivo de LOG.')
 
         else:
-            messagebox.showwarning('Driver ODBC', 'Driver ODBC 17 for SQL Server não instalado, por favor instale!')
+            messagebox.showwarning('Driver ODBC', 'Driver ODBC 13 for SQL Server não instalado, por favor instale!')
             # URL que você deseja abrir
-            url = "https://go.microsoft.com/fwlink/?linkid=2266337"
+            url = "https://www.microsoft.com/en-us/download/details.aspx?id=50420"
             # Abrir o navegador padrão com o link
             webbrowser.open(url)
 

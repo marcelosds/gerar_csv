@@ -1,5 +1,5 @@
 import logging
-import socket
+import sys
 import urllib
 import webbrowser
 import pandas as pd
@@ -9,11 +9,11 @@ from tkinter import *
 import os
 from tkinter import messagebox
 from sqlalchemy import create_engine
+from PyQt5.QtGui import QIcon
 
 
 class Application:
     def __init__(self, master=None):
-        self.mensagem1 = None
         self.fontePadrao = ("Arial", "10")
         self.primeiroContainer = Frame(master)
         self.primeiroContainer["pady"] = 10
@@ -95,32 +95,32 @@ class Application:
 
 
                 query = """
-                                SELECT
-                                    '' as [Data Movimento],
-                                    ITEM.cditem as [Código],	
-                                    ITEM.nrPlaca as Placa,
-                                    ITEM.dsItem as [Descrição Completa],
-                                    ITEM.dsReduzida as [Descrição Reduzida],
-                                    ITEM.dsMarca AS MARCA,
-                                    ITEM.dsModelo AS MODELO,
-                                    ITEM.cdLocalizacao as [Cód Localização],
-                                    ITEM.cdClassificacao as [Cód. Classificação],
-                                    ITEM.cdSituacao as Situação,
-                                    ITEM.cdEstadoConser as EstadoConservação,
-                                    Convert(varchar(10), dtAquisicao, 105) as [Data do Ingresso],
-                                    ITEM.cdTpIngresso as [Tipo de Ingresso],
-                                    ITEM.cdFornecedor as [Cód. Fornecedor],
-                                    ITEM.cdConvenio as Convenio,
-                                    ITEM.vlAtual as [Valor Atual],
-                                    ITEM.InContabil as Contábil,
-                                    ITEM.InDepreciavel as Depreciável,
-                                    ITEM.CdMetodoDepreciacao as [Método de Depreciação],
-                                    ITEM.VidaUtil as [Vida Útil],
-                                    ITEM.vlResidual as [Valor Residual],
-                                    '' as [Data Inicio Depreciação]
-                                FROM ITEM
-                                WHERE ITEM.stitem = 'N'
-                                """
+                        SELECT
+                            '' as [Data Movimento],
+                            ITEM.cditem as [Código],	
+                            ITEM.nrPlaca as Placa,
+                            ITEM.dsItem as [Descrição Completa],
+                            ITEM.dsReduzida as [Descrição Reduzida],
+                            ITEM.dsMarca AS MARCA,
+                            ITEM.dsModelo AS MODELO,
+                            ITEM.cdLocalizacao as [Cód Localização],
+                            ITEM.cdClassificacao as [Cód. Classificação],
+                            ITEM.cdSituacao as Situação,
+                            ITEM.cdEstadoConser as EstadoConservação,
+                            Convert(varchar(10), dtAquisicao, 105) as [Data do Ingresso],
+                            ITEM.cdTpIngresso as [Tipo de Ingresso],
+                            ITEM.cdFornecedor as [Cód. Fornecedor],
+                            ITEM.cdConvenio as Convenio,
+                            ITEM.vlAtual as [Valor Atual],
+                            ITEM.InContabil as Contábil,
+                            ITEM.InDepreciavel as Depreciável,
+                            ITEM.CdMetodoDepreciacao as [Método de Depreciação],
+                            ITEM.VidaUtil as [Vida Útil],
+                            ITEM.vlResidual as [Valor Residual],
+                            '' as [Data Inicio Depreciação]
+                        FROM ITEM
+                        WHERE ITEM.stitem = 'N'
+                        """
 
                 df = pd.read_sql(query, engine)
 
@@ -153,3 +153,8 @@ app.iconbitmap("icon.ico")
 app.resizable(0, 0)
 Application(app)
 app.mainloop()
+
+if getattr(sys, 'frozen', False):
+    # Se o código estiver sendo executado em um executável PyInstaller
+    app_icon = QIcon('icon.ico')
+    app.setWindowIcon(app_icon)
